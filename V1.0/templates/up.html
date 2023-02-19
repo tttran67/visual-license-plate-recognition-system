@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>License Plate Recognition</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+
+</head>
+<body>
+<p align="center"><b>License Plate Recognition</b></p>
+<hr />
+<!--<h3>请选择图片文件：PNG/JPG/JPEG/SVG/GIF</h3>-->
+<div style="text-align: left;margin-left:10px;margin-top:50px;" >
+
+    <div style="float:left;">
+        <a href="javascript:;" class="file">
+            <input type="file" name="file" id="file0"><br>
+        </a>
+        <img src="" id="img0" width="500px">
+    </div>
+    <div style="float:left;margin-left:50px;">
+        <input type="button" id="b0" onclick="test()" value="模版匹配预测">
+        (时间可能较长，请耐心等待...)
+        <!--<input type="text" id="t0" value="模式匹配预测">-->
+        <pre  id="out" style="width:320px;height:50px;line-height: 50px;margin-top:20px;"></pre>
+        <input type="button" id="b1" onclick="test_dl()" value="神经网络预测">
+        <pre  id="out_dl" style="width:320px;height:50px;line-height: 50px;margin-top:20px;"></pre>
+        <br>
+        <!--车牌分割结果：
+        <img src="http://127.0.0.1:5000/p5.jpg" id="img1" width="100px">
+        <input type="text"  id="MYDEBUG">-->
+    </div>
+</div>
+
+<script type="text/javascript">
+    $("#file0").change(function(){
+        var objUrl = getObjectURL(this.files[0]) ;//获取文件信息
+        var spilt_objUrl=objUrl;//getObjectURL("p2.jpg");//objUrl.replace(/\.jpg/g,"_split.jpg")
+        console.log(spilt_objUrl)
+        if (objUrl) {
+            $("#img0").attr("src", objUrl);
+        }
+    });
+
+    function test() {
+        var fileobj = $("#file0")[0].files[0];
+        console.log(fileobj);
+        var form = new FormData();
+        form.append("file", fileobj);
+        var out='';
+        var flower='';
+        $.ajax({
+            type: 'POST',
+            url: "predict",
+            data: form,
+            async: false,       //同步执行
+            processData: false, // 告诉jquery要传输data对象
+            contentType: false, //告诉jquery不需要增加请求头对于contentType的设置
+            success: function (arg) {
+            console.log(arg)
+            out = arg.result;
+        },error:function(){
+                console.log("后台处理错误");
+            }
+    });
+
+        out.forEach(e=>{
+            flower+=`<div style="border-bottom: 1px solid #CCCCCC;line-height: 60px;font-size:16px;">${e}</div>`
+        });
+
+        document.getElementById("out").innerHTML=flower;
+
+    }
+    function test_dl() {
+        var fileobj = $("#file0")[0].files[0];
+        console.log(fileobj);
+        var form = new FormData();
+        form.append("file", fileobj);
+        var out='';
+        var flower='';
+        $.ajax({
+            type: 'POST',
+            url: "predict_dl",
+            data: form,
+            async: false,       //同步执行
+            processData: false, // 告诉jquery要传输data对象
+            contentType: false, //告诉jquery不需要增加请求头对于contentType的设置
+            success: function (arg) {
+            console.log(arg)
+            out = arg.result;
+        },error:function(){
+                console.log("后台处理错误");
+            }
+    });
+
+        out.forEach(e=>{
+            flower+=`<div style="border-bottom: 1px solid #CCCCCC;line-height: 60px;font-size:16px;">${e}</div>`
+        });
+
+        document.getElementById("out_dl").innerHTML=flower;
+
+    }
+    function getObjectURL(file) {
+        var url = null;
+        if(window.createObjectURL!=undefined) {
+            url = window.createObjectURL(file) ;
+        }else if (window.URL!=undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file) ;
+        }else if (window.webkitURL!=undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file) ;
+        }
+        return url ;
+    }
+</script>
+</body>
+</html>
+
+
